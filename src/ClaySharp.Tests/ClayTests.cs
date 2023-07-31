@@ -5,43 +5,50 @@ using System.Linq.Expressions;
 using ClaySharp.Behaviors;
 using NUnit.Framework;
 
-namespace ClaySharp.Tests {
-
-
+namespace ClaySharp.Tests
+{
     [TestFixture]
-    public class ClayTests {
+    public class ClayTests
+    {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public ClayHelper S { get; set; }
         public dynamic New { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         [SetUp]
-        public void Init() {
+        public void Init()
+        {
             S = new ClayHelper();
             New = new ClayFactory();
         }
 
-        static IEnumerable<T> Cat<T>(T t) {
+        static IEnumerable<T> Cat<T>(T t)
+        {
             yield return t;
         }
 
         [Test]
-        public void PropertiesCanBeAssignedAndRetrieved() {
+        public void PropertiesCanBeAssignedAndRetrieved()
+        {
             dynamic shape = new Clay(Cat(new PropBehavior()));
             shape.Foo = "textbox";
             Assert.That((object)shape.Foo, Is.EqualTo("textbox"));
         }
 
-        public interface ITest {
+        public interface ITest
+        {
             string Foo { get; set; }
             ITestSub Bar { get; set; }
         }
 
-        public interface ITestSub {
+        public interface ITestSub
+        {
             string FooSub { get; set; }
         }
 
-
         [Test]
-        public void TypeCastToInterface() {
+        public void TypeCastToInterface()
+        {
             dynamic shape = new Clay(new PropBehavior(), new NilResultBehavior(), new InterfaceProxyBehavior());
             dynamic shape2 = new Clay(new PropBehavior(), new NilResultBehavior(), new InterfaceProxyBehavior());
 
@@ -79,11 +86,10 @@ namespace ClaySharp.Tests {
             shape2.FooSub = "Yarg";
             Assert.That(test2.Bar.FooSub, Is.EqualTo("Yarg"));
             Assert.That(shape.Bar.FooSub, Is.EqualTo("Yarg"));
-
         }
 
-
-        public interface ITestForm {
+        public interface ITestForm
+        {
             string ShapeName();
             object this[object key] { get; set; }
 
@@ -91,29 +97,30 @@ namespace ClaySharp.Tests {
             int? Misc { get; set; }
         }
 
-        public interface ITestActions {
+        public interface ITestActions
+        {
             string ShapeName { get; set; }
             IButton Save { get; set; }
             IButton Cancel { get; set; }
             IButton Preview { get; set; }
         }
 
-        public interface IButton {
+        public interface IButton
+        {
             string ShapeName { get; set; }
             string Id { get; set; }
             string Value { get; set; }
         }
 
         [Test]
-        public void CreateSyntax() {
-
+        public void CreateSyntax()
+        {
             var form = New.Form(new { Misc = 4 })
                 .Actions(New.Fieldset()
                     .Save(New.Button().Value("Save").Id("Hello"))
                     .Cancel(New.Button().Value("Cancel")));
 
-
-            var bar = New.Foo(new { Bleah = (object)null });
+            var bar = New.Foo(new { Bleah = (object?)null });
 
             Assert.That(bar.Bleah(), Is.SameAs(Nil.Instance));
             Assert.That(bar.Bleah, Is.SameAs(Nil.Instance));
@@ -129,7 +136,6 @@ namespace ClaySharp.Tests {
             var foo7 = (string)bar.Foo ?? "yarg";
 
             //            var foo8 = bar.Foo ? bar.Foo : (dynamic)"yarg";
-
 
             Assert.That(foo1, Is.SameAs(Nil.Instance));
             Assert.That(foo2, Is.Null);
@@ -184,7 +190,8 @@ namespace ClaySharp.Tests {
         }
 
         [Test]
-        public void CreateArraySyntax() {
+        public void CreateArraySyntax()
+        {
             var directory = New.Array(
                 New.Person().Name("Louis").Aliases(new[] { "Lou" }),
                 New.Person().Name("Bertrand").Aliases("bleroy", "boudin")
@@ -201,13 +208,15 @@ namespace ClaySharp.Tests {
             Assert.That(directory[1].Aliases[1], Is.EqualTo("boudin"));
         }
 
-        public interface IPerson {
+        public interface IPerson
+        {
             string FirstName { get; set; }
             string LastName { get; set; }
         }
 
         [Test]
-        public void BertrandsAssumptions() {
+        public void BertrandsAssumptions()
+        {
             var pentagon = New.Shape();
             pentagon["FavoriteNumber"] = 5;
 
@@ -222,7 +231,8 @@ namespace ClaySharp.Tests {
             Assert.That(person.FirstName(), Is.EqualTo("Louis"));
             Assert.That(person.LastName, Is.EqualTo("Dejardin"));
 
-            var otherPerson = New.Person(new {
+            var otherPerson = New.Person(new
+            {
                 FirstName = "Bertrand",
                 LastName = "Le Roy"
             });
@@ -247,7 +257,8 @@ namespace ClaySharp.Tests {
             Assert.That(people[1].LastName, Is.EqualTo("Le Roy"));
 
             var a = "";
-            foreach (var p in people) {
+            foreach (var p in people)
+            {
                 a += p.FirstName + "|";
             }
             Assert.That(a, Is.EqualTo("Louis|Bertrand|"));
@@ -266,7 +277,8 @@ namespace ClaySharp.Tests {
         }
 
         [Test]
-        public void ShapeFactorySetsShapeName() {
+        public void ShapeFactorySetsShapeName()
+        {
             var x1 = New.Something();
             var x2 = New.SomethingElse();
 
@@ -275,7 +287,8 @@ namespace ClaySharp.Tests {
         }
 
         [Test]
-        public void OptionsArgumentSetsProperties() {
+        public void OptionsArgumentSetsProperties()
+        {
             var x = New.Something(new { One = "1", Two = 2 });
 
             Assert.That(x.ShapeName, Is.EqualTo("Something"));
@@ -284,40 +297,46 @@ namespace ClaySharp.Tests {
         }
 
         [Test]
-        public void ClayMetaObjectCanBeUsedAsAnInternalImplementationDetail() {
+        public void ClayMetaObjectCanBeUsedAsAnInternalImplementationDetail()
+        {
             dynamic augmented = new AugmentedObject();
             Assert.That(augmented.Foo, Is.EqualTo("Bar"));
         }
 
-        public class AugmentedObject : IDynamicMetaObjectProvider {
-
-            public DynamicMetaObject GetMetaObject(Expression parameter) {
+        public class AugmentedObject : IDynamicMetaObjectProvider
+        {
+            public DynamicMetaObject GetMetaObject(Expression parameter)
+            {
                 return new ClayMetaObject(this, parameter, ex => Expression.Constant(new FooIsBar(), typeof(IClayBehavior)));
             }
 
-            class FooIsBar : ClayBehavior {
-                public override object GetMemberMissing(Func<object> proceed, object self, string name) {
+            class FooIsBar : ClayBehavior
+            {
+                public override object GetMemberMissing(Func<object> proceed, object self, string name)
+                {
                     return name == "Foo" ? "Bar" : base.GetMemberMissing(proceed, self, name);
                 }
             }
         }
     }
 
-    public class ClayHelper {
-        public dynamic New(string shapeName, Action<dynamic> initialize) {
+    public class ClayHelper
+    {
+        public dynamic New(string shapeName, Action<dynamic> initialize)
+        {
             var item = new Clay(new PropBehavior());
             initialize(item);
             return item;
         }
-        public dynamic New(string shapeName) {
-            return New(shapeName, item => { });
-        }
+
+        public dynamic New(string shapeName) =>
+            New(shapeName, item => { });
     }
 
-
-
-    public static class ClayHelperExtensions {
-        public static dynamic TextBox(this ClayHelper clayHelper, Action<dynamic> initialize) {
+    public static class ClayHelperExtensions
+    {
+        public static dynamic TextBox(this ClayHelper clayHelper, Action<dynamic> initialize)
+        {
             return clayHelper.New("textbox", initialize);
         }
     }
